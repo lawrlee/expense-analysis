@@ -1,0 +1,13 @@
+version: '2'
+
+services:
+  jupyter:
+    build: .
+    environment:
+      GOOGLE_SHEET_ID:
+    volumes:
+      - .:/app
+      - ~/.credentials:/root/.credentials
+    ports:
+      - "8888:8888"
+    command: jupyter notebook --no-browser --ip 0.0.0.0 --allow-root

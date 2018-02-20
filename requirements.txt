@@ -1,0 +1,8 @@
+IPython
+pandas
+xmljson
+lxml
+jupyter
+matplotlib
+seaborn
+google-api-python-client
