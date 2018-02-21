@@ -1,7 +1,6 @@
 from __future__ import print_function
 import httplib2
 import os
-import sys
 
 from apiclient import discovery
 from oauth2client import client
@@ -10,7 +9,7 @@ from oauth2client.file import Storage
 
 try:
     import argparse
-    flags = argparse.ArgumentParser(parents=[tools.argparser]).parse_args()
+    flags = argparse.ArgumentParser(parents=[tools.argparser]).parse_args(args=[])
 except ImportError:
     flags = None
 
@@ -49,6 +48,20 @@ def get_credentials():
         print('Storing credentials to ' + credential_path)
     return credentials
 
+def get_data():
+    credentials = get_credentials()
+    http = credentials.authorize(httplib2.Http())
+    discoveryUrl = ('https://sheets.googleapis.com/$discovery/rest?'
+                    'version=v4')
+    service = discovery.build('sheets', 'v4', http=http,
+                              discoveryServiceUrl=discoveryUrl)
+
+    spreadsheetId = os.getenv('GOOGLE_SHEET_ID')
+    rangeName = 'expenses!A1:G'
+    result = service.spreadsheets().values().get(
+        spreadsheetId=spreadsheetId, range=rangeName).execute()
+    return result.get('values', [])
+
 def main():
     """Shows basic usage of the Sheets API.
 
@@ -64,7 +77,7 @@ def main():
                               discoveryServiceUrl=discoveryUrl)
 
     spreadsheetId = os.getenv('GOOGLE_SHEET_ID')
-    rangeName = 'expenses!D1:D7'
+    rangeName = 'expenses!A1:G'
     result = service.spreadsheets().values().get(
         spreadsheetId=spreadsheetId, range=rangeName).execute()
     values = result.get('values', [])
@@ -73,10 +86,6 @@ def main():
         print('No data found.')
     else:
         print(values)
-
-    import IPython
-    IPython.embed()
-    sys.exit(0)
 
 
 if __name__ == '__main__':
