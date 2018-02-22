@@ -10,6 +10,25 @@ from matplotlib.backends.backend_pdf import PdfPages
 from data import get_data
 
 
+def factorplot_category_spending_per_month(df, pdf):
+    gb = df.groupby([df.Year, df.Month, df.Category], as_index=False)
+    gb_sum = gb.Debit.sum()
+    fill_rows = []
+    for y in gb_sum['Year'].unique():
+        for m in gb_sum[gb_sum['Year'] == y]['Month'].unique():
+            for c in gb_sum['Category'].unique():
+                if gb_sum.loc[(gb_sum.Year == y) & (gb_sum.Month == m) & (gb_sum.Category == c)].empty:
+                    fill_rows.append({'Year': y, 'Month': m, 'Category': c, 'Debit': 0})
+
+    gb_sum = gb_sum.append(pd.DataFrame(fill_rows))
+
+    g = sns.FacetGrid(gb_sum, col="Month", row="Year", size=4)
+    g = g.map(plt.bar, "Category", "Debit")
+    g.set_xticklabels(rotation=90)
+    plt.tight_layout()
+    pdf.savefig()
+    plt.close()
+
 def categories_per_month(df, pdf):
     all_category_sum = df.groupby([df.Year, df.Month, df.Category])['Debit'].sum()
     for year in all_category_sum.index.levels[0]:
